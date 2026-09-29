@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Your Scent</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#f7f2ec;
+    color:#3d332e;
+  }
+  .app{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .card{
+    width:min(520px,100%);
+    min-height:680px;
+    background:#fffdf9;
+    border-radius:30px;
+    padding:34px 26px;
+    box-shadow:0 12px 40px rgba(70,50,35,.12);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .eyebrow{
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    opacity:.55;
+    margin-bottom:18px;
+  }
+  h1{
+    font-family:Georgia,serif;
+    font-size:42px;
+    line-height:1.08;
+    margin:0 0 18px;
+  }
+  h2{
+    font-family:Georgia,serif;
+    font-size:28px;
+    line-height:1.2;
+    margin:8px 0 24px;
+  }
+  p{line-height:1.75;margin:0 0 22px}
+  .sub{opacity:.7}
+  button{
+    width:100%;
+    border:0;
+    border-radius:16px;
+    padding:16px 18px;
+    margin:7px 0;
+    font-size:16px;
+    font-weight:600;
+    color:#3d332e;
+    background:#eee5dc;
+    cursor:pointer;
+    transition:.2s;
+  }
+  button:hover{transform:translateY(-1px)}
+  .primary{background:#3d332e;color:white}
+  .progress{
+    height:5px;
+    background:#eee7df;
+    border-radius:99px;
+    overflow:hidden;
+    margin:0 0 28px;
+  }
+  .bar{height:100%;background:#3d332e;transition:.3s}
+  .qnum{font-size:13px;opacity:.55;margin-bottom:10px}
+  .result-icon{font-size:60px;margin-bottom:12px}
+  .result-title{font-family:Georgia,serif;font-size:34px;margin:0 0 8px}
+  .result-en{font-size:14px;letter-spacing:1px;opacity:.55;margin-bottom:22px}
+  .vibe{
+    display:inline-block;
+    padding:8px 12px;
+    border-radius:99px;
+    background:#eee5dc;
+    font-size:13px;
+    margin-bottom:22px;
+  }
+  .hidden{display:none}
+  .choice{ text-align:left; }
+  @media(max-width:430px){
+    .app{padding:12px}
+    .card{min-height:calc(100vh - 24px);border-radius:24px;padding:28px 20px}
+    h1{font-size:36px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="card">
+
+    <section id="start">
+      <div class="eyebrow">A scent quiz inspired by Bangsaen</div>
+      <h1>What scent<br>feels like you?</h1>
+      <p class="sub">ตอบคำถามสั้น ๆ 5 ข้อ แล้วมาดูกันว่า “กลิ่นไหน” ที่เข้ากับตัวคุณที่สุด</p>
+      <button class="primary" onclick="startQuiz()">เริ่มทำควิช</button>
+    </section>
+
+    <section id="quiz" class="hidden">
+      <div class="progress"><div id="bar" class="bar" style="width:20%"></div></div>
+      <div id="qnum" class="qnum">QUESTION 1 / 5</div>
+      <h2 id="question"></h2>
+      <div id="choices"></div>
+    </section>
+
+    <section id="result" class="hidden">
+      <div id="resultIcon" class="result-icon"></div>
+      <div class="eyebrow">Your scent is</div>
+      <div id="resultTitle" class="result-title"></div>
+      <div id="resultEn" class="result-en"></div>
+      <div id="resultVibe" class="vibe"></div>
+      <p id="resultText"></p>
+      <button class="primary" onclick="restart()">ทำควิชอีกครั้ง</button>
+    </section>
+
+  </main>
+</div>
+
+<script>
+const questions = [
+  {
+    q:"หลังจากเหนื่อยมาทั้งวัน คุณอยากใช้เวลาที่เหลือแบบไหน?",
+    a:[
+      ["ออกไปนั่งรับลม ฟังเพลง ปล่อยหัวโล่ง ๆ","A"],
+      ["ออกไปขับรถเล่น ดูพระอาทิตย์ตก หาอะไรอร่อย ๆ กิน","B"],
+      ["กลับห้อง เปิดไฟสลัว ๆ ห่มผ้า แล้วพักแบบสบาย ๆ","C"]
+    ]
+  },
+  {
+    q:"ถ้าความทรงจำหนึ่งเรื่องมี “สี” คุณอยากให้เป็นสีอะไร?",
+    a:[
+      ["น้ำเงินเข้ม เหมือนทะเลในคืนที่เงียบสงบ","A"],
+      ["ส้มทอง เหมือนแสงสุดท้ายก่อนพระอาทิตย์ตก","B"],
+      ["ครีมอุ่น ๆ เหมือนแสงแดดที่ส่องเข้าห้องตอนเช้า","C"]
+    ]
+  },
+  {
+    q:"เวลาคุณอยู่กับคนที่สนิท คุณมักเป็นแบบไหน?",
+    a:[
+      ["ไม่ต้องพูดเยอะ แค่อยู่ด้วยกันก็สบายใจ","A"],
+      ["ชวนกันออกไปเจออะไรใหม่ ๆ สร้างโมเมนต์ด้วยกัน","B"],
+      ["ชอบดูแลกัน กินข้าวด้วยกัน คุยเรื่องเล็ก ๆ น้อย ๆ","C"]
+    ]
+  },
+  {
+    q:"ถ้าวันนี้เลือก “บรรยากาศ” ให้ตัวเองได้หนึ่งแบบ คุณจะเลือก…",
+    a:[
+      ["ลมเย็น ๆ เสียงคลื่น และท้องฟ้าที่มืดสนิท","A"],
+      ["แสงพระอาทิตย์สีส้ม เพลงโปรด และถนนที่กำลังกลับบ้าน","B"],
+      ["กลิ่นขนมหวาน บ้านที่อบอุ่น และความรู้สึกเหมือนได้กลับบ้าน","C"]
+    ]
+  },
+  {
+    q:"ประโยคไหนตรงกับคุณที่สุด?",
+    a:[
+      ["บางครั้งการไม่ต้องทำอะไรเลย ก็เป็นความสุขเหมือนกัน","A"],
+      ["อยากใช้ชีวิตให้เต็มที่กับช่วงเวลาดี ๆ ที่มี","B"],
+      ["ความสุขของฉันอาจเป็นเรื่องเล็ก ๆ ที่ทำให้รู้สึกเหมือนอยู่บ้าน","C"]
+    ]
+  }
+];
+
+const results = {
+  A:{
+    icon:"🌙",
+    title:"Midnight at Wonnapha",
+    en:"สายลมหาดวอน ยามดึก",
+    vibe:"Unwind & Relief · Tranquil & Free",
+    text:"คุณเป็นคนที่รู้จักการปล่อยวางและให้พื้นที่กับตัวเอง เมื่อวันเหนื่อย ๆ จบลง คุณต้องการความสงบ โปร่ง และเบา เหมือนปล่อยความคิดให้ลอยไปกับเสียงคลื่น อีกด้านหนึ่งคุณให้คุณค่ากับมิตรภาพที่ไม่ต้องพยายามมาก แค่อยู่ข้างกันก็รู้สึกสบายใจ"
+  },
+  B:{
+    icon:"🌅",
+    title:"Sunset at Sam Muk",
+    en:"ความทรงจำสีส้มที่เขาสามมุข",
+    vibe:"Nostalgic Romance · Free-spirited & Warmhearted",
+    text:"คุณเป็นคนที่มีความอบอุ่นและมีเสน่ห์แบบเป็นธรรมชาติ ชอบช่วงเวลาที่ทำให้หัวใจเต้นเบา ๆ และมักเก็บความทรงจำดี ๆ เอาไว้ คุณมีความเป็นอิสระ มีความหวัง และชอบเติมสีสันให้วันธรรมดากลายเป็นโมเมนต์ที่น่าจดจำ"
+  },
+  C:{
+    icon:"🍞",
+    title:"Nong Mon Sweet Warmth",
+    en:"กลิ่นไออบอุ่นหนองมน",
+    vibe:"Cozy Comfort · Safe, Comforting & Nostalgic",
+    text:"คุณเป็นคนที่ให้คุณค่ากับความคุ้นเคย ความอบอุ่น และความรู้สึกปลอดภัย คุณมีความละมุนที่ทำให้คนรอบตัวรู้สึกเข้าถึงง่าย เหมือนการได้กลับบ้านหรือย้อนกลับไปหาความสุขเล็ก ๆ ในวัยเด็ก เหมาะกับวันที่อยากกอดตัวเองเบา ๆ และพักใจ"
+  }
+};
+
+let current=0;
+let scores={A:0,B:0,C:0};
+
+function startQuiz(){
+  current=0; scores={A:0,B:0,C:0};
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  renderQuestion();
+}
+function renderQuestion(){
+  const item=questions[current];
+  document.getElementById("qnum").textContent=`QUESTION ${current+1} / ${questions.length}`;
+  document.getElementById("bar").style.width=((current+1)/questions.length*100)+"%";
+  document.getElementById("question").textContent=item.q;
+  const box=document.getElementById("choices");
+  box.innerHTML="";
+  item.a.forEach(([text,key])=>{
+    const btn=document.createElement("button");
+    btn.className="choice";
+    btn.textContent=text;
+    btn.onclick=()=>answer(key);
+    box.appendChild(btn);
+  });
+}
+function answer(key){
+  scores[key]++;
+  current++;
+  if(current<questions.length) renderQuestion();
+  else showResult();
+}
+function showResult(){
+  const max=Math.max(scores.A,scores.B,scores.C);
+  const winners=Object.keys(scores).filter(k=>scores[k]===max);
+  const key=winners[Math.floor(Math.random()*winners.length)];
+  const r=results[key];
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+  document.getElementById("resultIcon").textContent=r.icon;
+  document.getElementById("resultTitle").textContent=r.title;
+  document.getElementById("resultEn").textContent=r.en;
+  document.getElementById("resultVibe").textContent=r.vibe;
+  document.getElementById("resultText").textContent=r.text;
+}
+function restart(){
+  document.getElementById("result").classList.add("hidden");
+  startQuiz();
+}
+</script>
+</body>
+</html>
